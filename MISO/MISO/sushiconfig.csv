@@ -1,2 +1,2 @@
 Library Code,Provider Name,Release,URL,Requestor ID,Requestor Name,Requestor E-Mail,Customer ID,Customer Name,JR1,JR2(Not yet Supported),DB1,DB2(Not yet Supported),DB3,WSSE Username (Proquest only),WSSE Password (Proquest Only)
-Lib1,Euclid,http://projecteuclid.org/sushi/16/service.cgi,12345,Test Account,prime@test.com,test/prime,JR1,y,n,n,n,n
+Lib1,Euclid,R2,http://projecteuclid.org/sushi/16/service.cgi,12345,Test Account,prime@test.com,test/prime,JR1,y,n,n,n,n
