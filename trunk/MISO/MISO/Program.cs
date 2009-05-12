@@ -123,7 +123,7 @@ namespace MISO
                         else
                         {
                             //loop through report types in header
-                            for (int i = 9; i < header.Length; i++)
+                            for (int i = 9; i < 13; i++)
                             {
                                 try
                                 {
