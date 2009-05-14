@@ -19,6 +19,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
+using System.Xml.Schema;
 
 namespace MISO
 {
@@ -27,7 +28,8 @@ namespace MISO
         // constants
         private static string[] DateTimeFormats = { "MMyyyy" };
         private const string ArgErrorMessage =
-            "Paramters are:\nMISO.EXE [start] [end] [Library Codes]\n[start]: start date in mmyyyy format\n[end]: end date in mmyyyy format\nend date must not be before start date";
+            @"Paramters are:\nMISO.EXE [start] [end] [Optional Library Codes separate by commas]\n[start]: start date in mmyyyy format\n[end]: end date in mmyyyy format\nend date must not be before start date
+            \n\To validate: -v [filename]";
         private static char[] DELIM = { ',' };
 
         // global variables to MISO
@@ -52,6 +54,16 @@ namespace MISO
             }
         }
 
+        //validation mode stuff
+        private static bool isValid = true;
+
+        private static void CounterV3ValidationEventHandler(object sender, ValidationEventArgs args)
+        {
+            isValid = false;
+            Console.WriteLine("Validation event\n" + args.Message);
+
+        }
+
         private static string ErrorDate
         {
             get { return DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss"); }
@@ -59,11 +71,10 @@ namespace MISO
 
         static void Main(string[] args)
         {
+
             FileStream sushiConfig = new FileStream("sushiconfig.csv", FileMode.Open, FileAccess.Read);
 
             StreamReader sr = new StreamReader(sushiConfig);
-
-            string[] header = sr.ReadLine().Split(DELIM);
 
             try
             {
@@ -74,73 +85,117 @@ namespace MISO
                     throw new ArgumentException(ArgErrorMessage);
                 }
 
-                DateTime startMonth = DateTime.ParseExact(args[0], DateTimeFormats, null,
-                                                          DateTimeStyles.None);
-
-                DateTime endMonth = DateTime.ParseExact(args[1], DateTimeFormats, null,
-                                                        DateTimeStyles.None);
-
-                if (endMonth < startMonth)
+                // validate mode
+                if (args[0] == "-v")
                 {
-                    throw new ArgumentException("End date is before start date.");
-                }
+                    XmlTextReader r = new XmlTextReader(args[1]);
+                    XmlValidatingReader v = new XmlValidatingReader(r);
 
-                StartDate = new DateTime(startMonth.Year, startMonth.Month, 1);
-                EndDate = new DateTime(endMonth.Year, endMonth.Month,
-                                       DateTime.DaysInMonth(endMonth.Year, endMonth.Month));
+                    v.ValidationType = ValidationType.Schema;
 
-                FileStream requestTemplate = new FileStream("SushiSoapEnv.xml", FileMode.Open, FileAccess.Read);
-                StreamReader reader = new StreamReader(requestTemplate);
-                RequestTemplate = reader.ReadToEnd();
-                reader.Close();
-
-                #endregion
-
-                Dictionary<string, string> libCodeMap = null;
-                if (args.Length > 2)
-                {
-                    libCodeMap = new Dictionary<string, string>();
-
-                    string[] libCodes = args[2].Split(DELIM);
-                    foreach (string libCode in libCodes)
+                    v.ValidationEventHandler += CounterV3ValidationEventHandler;
+                    try
                     {
-                        libCodeMap.Add(libCode.ToUpper(), string.Empty);
+                        while (v.Read())
+                        {
+                            // nothing to do
+                        }
+
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        Console.WriteLine(e.Message);
+                        System.Environment.Exit(-1);
+                    }
+                    finally
+                    {
+                        v.Close();
+                    }
+
+
+                    if (isValid)
+                    {
+                        Console.WriteLine("Document is valid");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Document is invalid");
                     }
                 }
 
-                string buffer;
-                for (int lineNum = 1; (buffer = sr.ReadLine()) != null; lineNum++)
+                else
                 {
-                    string[] fields = buffer.Split(DELIM);
 
-                    if (libCodeMap == null || libCodeMap.ContainsKey(fields[0].ToUpper()))
+                    string[] header = sr.ReadLine().Split(DELIM);
+
+                    DateTime startMonth = DateTime.ParseExact(args[0], DateTimeFormats, null,
+                                                              DateTimeStyles.None);
+
+                    DateTime endMonth = DateTime.ParseExact(args[1], DateTimeFormats, null,
+                                                            DateTimeStyles.None);
+
+                    if (endMonth < startMonth)
                     {
-                        if (fields.Length < 13)
+                        throw new ArgumentException("End date is before start date.");
+                    }
+
+                    StartDate = new DateTime(startMonth.Year, startMonth.Month, 1);
+                    EndDate = new DateTime(endMonth.Year, endMonth.Month,
+                                           DateTime.DaysInMonth(endMonth.Year, endMonth.Month));
+
+                    FileStream requestTemplate = new FileStream("SushiSoapEnv.xml", FileMode.Open, FileAccess.Read);
+                    StreamReader reader = new StreamReader(requestTemplate);
+                    RequestTemplate = reader.ReadToEnd();
+                    reader.Close();
+
+                    #endregion
+
+                    Dictionary<string, string> libCodeMap = null;
+                    if (args.Length > 2)
+                    {
+                        libCodeMap = new Dictionary<string, string>();
+
+                        string[] libCodes = args[2].Split(DELIM);
+                        foreach (string libCode in libCodes)
                         {
-                            ErrorFile.WriteLine(string.Format("{0}: Line {1} has insufficient data", ErrorDate,
-                                                              lineNum));
+                            libCodeMap.Add(libCode.ToUpper(), string.Empty);
                         }
-                        else
+                    }
+
+                    string buffer;
+                    for (int lineNum = 1; (buffer = sr.ReadLine()) != null; lineNum++)
+                    {
+                        string[] fields = buffer.Split(DELIM);
+
+                        if (libCodeMap == null || libCodeMap.ContainsKey(fields[0].ToUpper()))
                         {
-                            //loop through report types in header
-                            for (int i = 9; i < 13; i++)
+                            if (fields.Length < 13)
                             {
-                                try
+                                ErrorFile.WriteLine(string.Format("{0}: Line {1} has insufficient data", ErrorDate,
+                                                                  lineNum));
+                            }
+                            else
+                            {
+                                //loop through report types in header
+                                for (int i = 9; i < 13; i++)
                                 {
-                                    if (fields[i].ToLower().StartsWith("y"))
+                                    try
                                     {
-                                        ProcessSushiRequest(header[i], fields);
+                                        if (fields[i].ToLower().StartsWith("y"))
+                                        {
+                                            ProcessSushiRequest(header[i], fields);
+                                        }
                                     }
-                                }
-                                catch (Exception ex)
-                                {
-                                    ErrorFile.WriteLine(
-                                        string.Format(
-                                            "{0}: Exception occurred processing line {1} for report type {2}",
-                                            ErrorDate,
-                                            lineNum, header[i]));
-                                    ErrorFile.WriteLine(ex.Message);
-                                    ErrorFile.Write(ex.StackTrace);
+                                    catch (Exception ex)
+                                    {
+                                        ErrorFile.WriteLine(
+                                            string.Format(
+                                                "{0}: Exception occurred processing line {1} for report type {2}",
+                                                ErrorDate,
+                                                lineNum, header[i]));
+                                        ErrorFile.WriteLine(ex.Message);
+                                        ErrorFile.Write(ex.StackTrace);
+                                    }
                                 }
                             }
                         }
