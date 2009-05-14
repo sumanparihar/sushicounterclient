@@ -57,7 +57,7 @@
     <PreBuildEvent>copy $(ProjectDir)sushiconfig.csv $(ProjectDir)$(OutDir)
 copy $(ProjectDir)SushiSoapEnv.xml $(ProjectDir)$(OutDir)
 copy $(ProjectDir)WSSecurityPlainText.xml $(ProjectDir)$(OutDir)
-copy $(ProjectDir)SushiCounterV3SampleData.xml $(ProjectDir)$(OutDir)
+copy $(ProjectDir)JR1v3SampleData.xml $(ProjectDir)$(OutDir)
 copy $(ProjectDir)README.txt $(ProjectDir)$(OutDir)</PreBuildEvent>
   </PropertyGroup>
 </Project>

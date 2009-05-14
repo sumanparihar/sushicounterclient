@@ -27,7 +27,7 @@ The syntax is: miso -v [filename]
 
 You can test the included sample JR1 file.
 
-miso -v SushiCounterV3SampleData.xml
+miso -v JR1v3SampleData.xml
 
 *Validation of remote reports not yet supported.
 
