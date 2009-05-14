@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
     <ReportResponse xmlns="http://www.niso.org/schemas/sushi/counter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://www.niso.org/schemas/sushi/counter file:///D:/sushicounterclient/MISO/SushiSchemaValidator/counter_sushi3_0.xsd">
+	xsi:schemaLocation="http://www.niso.org/schemas/sushi/counter http://www.niso.org/schemas/sushi/counter_sushi3_0.xsd">
       <Requestor xmlns:sus="http://www.niso.org/schemas/sushi" xmlns="http://www.niso.org/schemas/sushi">
         <sus:ID></sus:ID>
         <sus:Name></sus:Name>
