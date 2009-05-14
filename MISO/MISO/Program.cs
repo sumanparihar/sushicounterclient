@@ -27,9 +27,14 @@ namespace MISO
     {
         // constants
         private static string[] DateTimeFormats = { "MMyyyy" };
-        private const string ArgErrorMessage =
-            @"Paramters are:\nMISO.EXE [start] [end] [Optional Library Codes separate by commas]\n[start]: start date in mmyyyy format\n[end]: end date in mmyyyy format\nend date must not be before start date
-            \n\To validate: -v [filename]";
+        private const string ArgErrorMessage = @"Paramters are:
+MISO.EXE [start] [end] [Optional Library Codes separate by commas]
+[start]: start date in mmyyyy format
+[end]: end date in mmyyyy format
+end date must not be before start date
+           
+To validate local Sushi-Counter XML file: -v [filename]";
+
         private static char[] DELIM = { ',' };
 
         // global variables to MISO
