@@ -22,6 +22,15 @@ Examples
 miso 012008 052008
 miso 122008 052009 XER,ER1
 
+There is also a validation mode to validate local Sushi-Counter XML files. 
+The syntax is: miso -v [filename]
+
+You can test the included sample JR1 file.
+
+miso -v SushiCounterV3SampleData.xml
+
+*Validation of remote reports not yet supported.
+
 ****Building from source****
 
 You will need Visual Studio 2008 to build the project.
