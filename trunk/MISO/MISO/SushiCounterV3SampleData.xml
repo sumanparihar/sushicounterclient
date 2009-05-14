@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <ReportResponse xmlns="http://www.niso.org/schemas/sushi/counter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.niso.org/schemas/sushi/counter file:///D:/sushicounterclient/MISO/SushiSchemaValidator/counter_sushi3_0.xsd">
+      <Requestor xmlns:sus="http://www.niso.org/schemas/sushi" xmlns="http://www.niso.org/schemas/sushi">
+        <sus:ID></sus:ID>
+        <sus:Name></sus:Name>
+        <sus:Email></sus:Email>
+      </Requestor>
+      <CustomerReference xmlns:sus="http://www.niso.org/schemas/sushi" xmlns="http://www.niso.org/schemas/sushi">
+        <sus:ID>3</sus:ID>
+        <!--Optional:-->
+        <sus:Name></sus:Name>
+      </CustomerReference>
+      <ReportDefinition xmlns:sus="http://www.niso.org/schemas/sushi" xmlns="http://www.niso.org/schemas/sushi" Name="JR1" Release="3">
+        <sus:Filters>
+          <sus:UsageDateRange>
+            <sus:Begin>2009-01-01</sus:Begin>
+            <sus:End>2009-02-28</sus:End>
+          </sus:UsageDateRange>
+        </sus:Filters>
+      </ReportDefinition>
+      <Report>
+          <Report Created="2009-05-14T11:50:04Z" ID="SomeId" Name="Tae's JR1 Sample" Title="Number of Successful Full-Text Article Requests by Month and Journal" Version="3" xmlns="http://www.niso.org/schemas/counter">
+            <Vendor>
+              <Name>Tae's Title</Name>
+              <ID>SomeId</ID>
+              <Contact>
+                <E-mail>tae.kim@serialssolutions.com</E-mail>
+              </Contact>
+              <WebSiteUrl>http://code.google.com/p/sushicounterclient/</WebSiteUrl>
+              <LogoUrl>http://code.google.com/p/sushicounterclient/logo.gif</LogoUrl>
+            </Vendor>
+            <Customer>
+              <Name>Tae</Name>
+              <ID>SomeId</ID>
+			  <!-- Consortium is optional -->
+              <Consortium>
+                <Code>SomeCode</Code>
+                <WellKnownName>Tae's Consortium</WellKnownName>
+              </Consortium>
+              <ReportItems>
+                <ItemIdentifier>
+                  <Type>as</Type>
+                  <Value>1111-1111</Value>
+                </ItemIdentifier>
+                <ItemIdentifier>
+                  <Type>Online_ISSN</Type>
+                  <Value>2222-2222</Value>
+                </ItemIdentifier>
+                <ItemPlatform>SomePlatform</ItemPlatform>
+                <ItemPublisher>SomePublisher</ItemPublisher>
+                <ItemName>Tae's Journal</ItemName>
+                <ItemDataType>Journal</ItemDataType>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-01-01</Begin>
+                    <End>2007-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_pdf</MetricType>
+                    <Count>1</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-02-01</Begin>
+                    <End>2007-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_pdf</MetricType>
+                    <Count>2</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-01-01</Begin>
+                    <End>2007-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_html</MetricType>
+                    <Count>1</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-02-01</Begin>
+                    <End>2007-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_html</MetricType>
+                    <Count>1</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2009-01-01</Begin>
+                    <End>2009-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_total</MetricType>
+                    <Count>3</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2009-02-01</Begin>
+                    <End>2009-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_total</MetricType>
+                    <Count>4</Count>
+                  </Instance>
+                </ItemPerformance>
+              </ReportItems>
+            </Customer>
+          </Report>
+      </Report>
+    </ReportResponse>
