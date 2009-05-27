@@ -182,7 +182,7 @@ To validate local Sushi-Counter XML file: -v [filename]";
                             else
                             {
                                 //loop through report types in header
-                                for (int i = 9; i < 13; i++)
+                                for (int i = 9; i < 14; i++)
                                 {
                                     try
                                     {
