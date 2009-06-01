@@ -23,16 +23,18 @@ miso -d 200801 200805
 miso -d 200812 200905 -l XER,ER1
 
 There is also a validation mode to validate local Sushi-Counter XML files. 
-The syntax is: miso -v [filename]
+For example, the following command will fetch all the reports for 2008 Jan to 2008 May and validate each response
+miso -v -d 200801 200805
 
 You can test the included sample JR1 file.
 
 miso -v JR1v3SampleData.xml
 
+If you wish to examine the actual XML returned by the server, you can save the file as xml without converting to csv.
+miso -x -d 200801 200805
+
 For more syntax details, use the following command
 miso -h
-
-*Validation of remote reports not yet supported.
 
 ****Building from source****
 

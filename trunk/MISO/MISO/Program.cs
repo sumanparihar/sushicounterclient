@@ -48,6 +48,8 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         private static DateTime EndDate;
         private static string RequestTemplate;
         private static bool XmlMode = false;
+        private static bool ValidateMode = false;
+        private static XmlReaderSettings XmlReaderSettings = new XmlReaderSettings();
 
         // lookup table to find month data
         private static Dictionary<string, string> MonthData;
@@ -86,12 +88,17 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             FileStream sushiConfig = new FileStream("sushiconfig.csv", FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(sushiConfig);
 
+            //initiate validation
+            XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
+            XmlReaderSettings.ValidationType = ValidationType.Schema;
+            XmlReaderSettings.Schemas.Add(CounterSushiSchema);
+            XmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
+
             try
             {
                 // lookup table for command args
                 Dictionary<string, string> arguments = new Dictionary<string, string>();
                 //arguments.Add();
-                bool validateMode = false;
                 string validateFile = string.Empty;
                 bool hasRange = false;
                 bool specifiedLibCodes = false;
@@ -105,12 +112,11 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                     {
 
                         case "-v":
-                            validateMode = true;
-                            if (i + 1 >= args.Length)
+                            ValidateMode = true;
+                            if (i + 1 < args.Length)
                             {
-                                throw new ArgumentException("File not specified for validation mode");
+                                validateFile = args[i + 1];   
                             }
-                            validateFile = args[i + 1];
                             break;
                         case "-d":
                             if (i + 1 < args.Length)
@@ -141,18 +147,10 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                 }
 
                 #region Initialize
-                // validate mode
-                if (validateMode)
+                // validate file mode
+                if (ValidateMode && !string.IsNullOrEmpty(validateFile))
                 {
-
-                    XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
-                    XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
-                    xmlReaderSettings.ValidationType = ValidationType.Schema;
-                    xmlReaderSettings.Schemas.Add(CounterSushiSchema);
-
-                    xmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
-
-                    using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(validateFile), xmlReaderSettings))
+                    using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(validateFile), XmlReaderSettings))
                     {
 
                         // Read XML to the end
@@ -359,10 +357,28 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
             XmlDocument sushiDoc = CallSushiServer(reqDoc, fields[3]);
 
+            if (ValidateMode)
+            {
+                MemoryStream ms = new MemoryStream();
+                sushiDoc.Save(ms);
+                ms.Position = 0;
+                using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(ms), XmlReaderSettings))
+                {
+
+                    // Read XML to the end
+                    while (xmlReader.Read())
+                    {
+                        // just read through file to trigger any validation errors
+                    }
+
+                    Console.WriteLine(string.Format("Finished validation Counter report of type {0} for Provider: {1}", reportType, fields[1]));
+                }
+            }
+
             if (XmlMode)
             {
                 sushiDoc.Save(fileName);
-                return;
+                return; // parsing and conversion to csv is unnecessary
             }
 
             XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
@@ -597,7 +613,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                         }
                         else
                         {
-                            // since 360 counter does not accept blank cells, add a zero is usage stat is missing
+                            // since 360 counter does not accept blank cells, add a zero if usage stat is missing
                             journal.Append("0");
                         }
                     }
