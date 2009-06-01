@@ -16,11 +16,11 @@ Otherwise, it will run through every line in sushiconfig.csv, fetch the reports 
 
 Any errors encountered will be written to an error file in the same directory.
 
-The syntax for the utility takes a start and end date in mmyyyy format and an optional list of library codes.
+The syntax for the utility takes a start and end date in mmyyyy format and an optional list of library codes delimited by commas with no space.
 
 Examples
-miso 012008 052008
-miso 122008 052009 XER,ER1
+miso -d 200801 200805
+miso -d 200812 200905 -l XER,ER1
 
 There is also a validation mode to validate local Sushi-Counter XML files. 
 The syntax is: miso -v [filename]
@@ -28,6 +28,9 @@ The syntax is: miso -v [filename]
 You can test the included sample JR1 file.
 
 miso -v JR1v3SampleData.xml
+
+For more syntax details, use the following command
+miso -h
 
 *Validation of remote reports not yet supported.
 

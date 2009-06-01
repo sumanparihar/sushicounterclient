@@ -27,14 +27,17 @@ namespace MISO
     {
         // constants
         private const string CounterSchemaURL = "http://www.niso.org/schemas/sushi/counter_sushi3_0.xsd";
-        private static string[] DateTimeFormats = { "MMyyyy" };
-        private const string ArgErrorMessage = @"Paramters are:
-MISO.EXE [start] [end] [Optional Library Codes separate by commas]
-[start]: start date in mmyyyy format
-[end]: end date in mmyyyy format
-end date must not be before start date
-           
-To validate local Sushi-Counter XML file: -v [filename]";
+        private static string[] DateTimeFormats = { "yyyyMM" };
+        private const string CommandParameterMessage = @"Parameters are:
+MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by commas]
+-v: Validate Mode, validates specified file
+
+-d: Sushi request start and end dates
+    [start]: start date in mmyyyy format
+    [end]: end date in mmyyyy format
+    end date must not be before start date
+
+-l: Specify Library Codes";
 
         private static char[] DELIM = { ',' };
 
@@ -77,22 +80,63 @@ To validate local Sushi-Counter XML file: -v [filename]";
 
         static void Main(string[] args)
         {
-
             FileStream sushiConfig = new FileStream("sushiconfig.csv", FileMode.Open, FileAccess.Read);
-
             StreamReader sr = new StreamReader(sushiConfig);
 
             try
             {
-                #region Initialize
+                // lookup table for command args
+                Dictionary<string, string> arguments = new Dictionary<string, string>();
+                //arguments.Add();
+                bool validateMode = false;
+                string validateFile = string.Empty;
+                bool hasRange = false;
+                bool specifiedLibCodes = false;
+                string start = string.Empty;
+                string end = string.Empty;
+                string libCodeStr = string.Empty;
 
-                if (args.Length < 2)
+                for (int i = 0; i < args.Length; i++)
                 {
-                    throw new ArgumentException(ArgErrorMessage);
+                    switch (args[i])
+                    {
+
+                        case "-v":
+                            validateMode = true;
+                            if (i + 1 >= args.Length)
+                            {
+                                throw new ArgumentException("File not specified for validation mode");
+                            }
+                            validateFile = args[i + 1];
+                            break;
+                        case "-d":
+                            if (i + 1 < args.Length)
+                            {
+                                start = args[i + 1];
+                            }
+                            if (i + 2 < args.Length)
+                            {
+                                end = args[i + 2];
+                            }
+                            break;
+                        case "-l":
+                            specifiedLibCodes = true;
+                            if (i + 1 >= args.Length)
+                            {
+                                throw new ArgumentException("File not specified for validation mode");
+                            }
+                            libCodeStr = args[i + 1];
+                            break;
+                        case "-h":
+                            Console.WriteLine(CommandParameterMessage);
+                            System.Environment.Exit(-1);
+                            break;
+                    }
                 }
 
+                #region Initialize
                 // validate mode
-                if (args[0] == "-v")
+                if (validateMode)
                 {
 
                     XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
@@ -102,7 +146,7 @@ To validate local Sushi-Counter XML file: -v [filename]";
 
                     xmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
 
-                    using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(args[1]), xmlReaderSettings))
+                    using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(validateFile), xmlReaderSettings))
                     {
 
                         // Read XML to the end
@@ -136,11 +180,20 @@ To validate local Sushi-Counter XML file: -v [filename]";
 
                     string[] header = sr.ReadLine().Split(DELIM);
 
-                    DateTime startMonth = DateTime.ParseExact(args[0], DateTimeFormats, null,
-                                                              DateTimeStyles.None);
+                    DateTime startMonth = DateTime.Now;
+                    DateTime endMonth = DateTime.Now;
 
-                    DateTime endMonth = DateTime.ParseExact(args[1], DateTimeFormats, null,
-                                                            DateTimeStyles.None);
+                    
+                    if (!string.IsNullOrEmpty(start))
+                    {
+                        startMonth = DateTime.ParseExact(start, DateTimeFormats, null,
+                                                                  DateTimeStyles.None);
+                    }
+                    if (!string.IsNullOrEmpty(end))
+                    {
+                        endMonth = DateTime.ParseExact(end, DateTimeFormats, null,
+                                                                DateTimeStyles.None);
+                    }
 
                     if (endMonth < startMonth)
                     {
@@ -159,11 +212,11 @@ To validate local Sushi-Counter XML file: -v [filename]";
                     #endregion
 
                     Dictionary<string, string> libCodeMap = null;
-                    if (args.Length > 2)
+                    if (specifiedLibCodes)
                     {
                         libCodeMap = new Dictionary<string, string>();
 
-                        string[] libCodes = args[2].Split(DELIM);
+                        string[] libCodes = libCodeStr.Split(DELIM);
                         foreach (string libCode in libCodes)
                         {
                             libCodeMap.Add(libCode.ToUpper(), string.Empty);
@@ -210,13 +263,13 @@ To validate local Sushi-Counter XML file: -v [filename]";
                     }
                 }
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                Console.WriteLine(ArgErrorMessage);
+                Console.WriteLine(ex.Message);
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
-                Console.WriteLine(ArgErrorMessage);
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -305,6 +358,7 @@ To validate local Sushi-Counter XML file: -v [filename]";
 
             if (exception != null && exception.HasChildNodes)
             {
+                Console.WriteLine(string.Format("Exception detected for report of type {0} for Provider: {1}\nPlease see error log for more details.", reportType, fields[1]));
                 throw new XmlException(
                     string.Format("Report returned Exception: Number: {0}, Severity: {1}, Message: {2}",
                     exception.SelectSingleNode("s:Number", xmlnsManager).InnerText, exception.SelectSingleNode("s:Severity", xmlnsManager).InnerText, exception.SelectSingleNode("s:Message", xmlnsManager).InnerText));
@@ -313,6 +367,8 @@ To validate local Sushi-Counter XML file: -v [filename]";
 
             TextWriter tw = new StreamWriter(fileName);
             StringBuilder header;
+
+            Console.WriteLine("Parsing report of type: " + reportType);
 
             switch(reportType)
             {
