@@ -37,7 +37,9 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
     [end]: end date in mmyyyy format
     end date must not be before start date
 
--l: Specify Library Codes";
+-l: Specify Library Codes
+
+-x: Save Request Response as XML without converting to csv";
 
         private static char[] DELIM = { ',' };
 
@@ -45,6 +47,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         private static DateTime StartDate;
         private static DateTime EndDate;
         private static string RequestTemplate;
+        private static bool XmlMode = false;
 
         // lookup table to find month data
         private static Dictionary<string, string> MonthData;
@@ -126,6 +129,9 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                                 throw new ArgumentException("File not specified for validation mode");
                             }
                             libCodeStr = args[i + 1];
+                            break;
+                        case "-x":
+                            XmlMode = true;
                             break;
                         case "-h":
                             Console.WriteLine(CommandParameterMessage);
@@ -325,7 +331,9 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         /// <param name="fields"></param>
         private static void ProcessSushiRequest(string reportType, string[] fields)
         {
-            string fileName = string.Format("{0}_{1}_{2}_{3}_{4}.csv", fields[1], fields[0], StartDate.ToString("MMyyyy"), EndDate.ToString("MMyyyy"), reportType);
+            string fileName = string.Format("{0}_{1}_{2}_{3}_{4}", fields[1], fields[0], StartDate.ToString("MMyyyy"), EndDate.ToString("MMyyyy"), reportType);
+
+            fileName = XmlMode ? fileName + ".xml" : fileName + ".csv";
 
             string startDateStr = StartDate.Date.ToString("yyyy-MM-dd");
             string endDateStr = EndDate.Date.ToString("yyyy-MM-dd");
@@ -350,6 +358,12 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             }
 
             XmlDocument sushiDoc = CallSushiServer(reqDoc, fields[3]);
+
+            if (XmlMode)
+            {
+                sushiDoc.Save(fileName);
+                return;
+            }
 
             XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
             // Proquest Error
