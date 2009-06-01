@@ -26,6 +26,7 @@ namespace MISO
     class Program
     {
         // constants
+        private const string CounterSchemaURL = "http://www.niso.org/schemas/sushi/counter_sushi3_0.xsd";
         private static string[] DateTimeFormats = { "MMyyyy" };
         private const string ArgErrorMessage = @"Paramters are:
 MISO.EXE [start] [end] [Optional Library Codes separate by commas]
@@ -93,31 +94,33 @@ To validate local Sushi-Counter XML file: -v [filename]";
                 // validate mode
                 if (args[0] == "-v")
                 {
-                    XmlTextReader r = new XmlTextReader(args[1]);
-                    XmlValidatingReader v = new XmlValidatingReader(r);
 
-                    v.ValidationType = ValidationType.Schema;
+                    XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
+                    XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
+                    xmlReaderSettings.ValidationType = ValidationType.Schema;
+                    xmlReaderSettings.Schemas.Add(CounterSushiSchema);
 
-                    v.ValidationEventHandler += CounterV3ValidationEventHandler;
-                    try
+                    xmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
+
+                    using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(args[1]), xmlReaderSettings))
                     {
-                        while (v.Read())
+
+                        // Read XML to the end
+                        try
                         {
-                            // nothing to do
+                            while (xmlReader.Read())
+                            {
+                                // just read through file to trigger any validation errors
+                            }
+
+                            Console.WriteLine("\nFinished validating XML file....");
                         }
-
+                        catch (FileNotFoundException e)
+                        {
+                            Console.WriteLine(e.Message);
+                            System.Environment.Exit(-1);
+                        }
                     }
-                    catch (FileNotFoundException e)
-                    {
-                        Console.WriteLine(e.Message);
-                        System.Environment.Exit(-1);
-                    }
-                    finally
-                    {
-                        v.Close();
-                    }
-
-
                     if (isValid)
                     {
                         Console.WriteLine("Document is valid");
