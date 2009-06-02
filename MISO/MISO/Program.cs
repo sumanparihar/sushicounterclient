@@ -36,6 +36,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
     [start]: start date in mmyyyy format
     [end]: end date in mmyyyy format
     end date must not be before start date
+    If not specified, it will automatically default to the previous month from the current date.
 
 -l: Specify Library Codes
 
@@ -184,8 +185,8 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
                     string[] header = sr.ReadLine().Split(DELIM);
 
-                    DateTime startMonth = DateTime.Now;
-                    DateTime endMonth = DateTime.Now;
+                    DateTime startMonth = DateTime.Now.AddMonths(-1);
+                    DateTime endMonth = DateTime.Now.AddMonths(-1);
 
                     
                     if (!string.IsNullOrEmpty(start))
