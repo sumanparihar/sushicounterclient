@@ -1,6 +1,11 @@
 ****Supported Platforms****
 Windows XP 32-bit
 
+****Requirements****
+
+Microsoft .NET Framework 2.0
+http://www.microsoft.com/downloads/details.aspx?FamilyID=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en
+
 ****Description****
 
 The client will query multiple SUSHI servers for any number of libraries and will convert the XML report into a CSV, which can then be uploaded to 360 Counter.
