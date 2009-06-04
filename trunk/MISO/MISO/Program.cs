@@ -298,7 +298,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Headers.Add("SOAPAction", "\"SushiService:GetReportIn\"");
 
-            ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(customXertificateValidation);
+            ServicePointManager.ServerCertificateValidationCallback += customXertificateValidation;
 
             req.ContentType = "text/xml;charset=\"utf-8\"";
             req.Accept = "text/xml";
@@ -478,8 +478,6 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         {
 
             XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
-            // Ebsco (probably)
-            //xmlnsManager.AddNamespace("sushi", "http://www.niso.org/schemas/sushi");
             
             xmlnsManager.AddNamespace("c", "http://www.niso.org/schemas/counter");
 
@@ -503,14 +501,9 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                             switch (identifier.SelectSingleNode("c:Type", xmlnsManager).InnerText.ToLower())
                             {
                                 // see http://www.niso.org/workrooms/sushi/values/#item
-
-                                // Euclid
-                                /*
-                                case "ISSN":
+                                case "issn":
                                     printIssn = value;
                                     break;
-                                */
-
                                 case "print_issn":
                                     printIssn = value;
                                     break;

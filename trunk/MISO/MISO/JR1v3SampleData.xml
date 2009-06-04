@@ -40,7 +40,7 @@
               </Consortium>
               <ReportItems>
                 <ItemIdentifier>
-                  <Type>as</Type>
+                  <Type>Print_ISSN</Type>
                   <Value>1111-1111</Value>
                 </ItemIdentifier>
                 <ItemIdentifier>
