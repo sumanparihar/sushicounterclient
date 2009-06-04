@@ -20,6 +20,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
+using SushiLibrary;
 
 namespace MISO
 {
@@ -477,97 +478,56 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         private static void ParseJR1v3(XmlDocument sushiDoc, TextWriter tw)
         {
 
-            XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
-            
-            xmlnsManager.AddNamespace("c", "http://www.niso.org/schemas/counter");
+            SushiReport sushiReport = ReportLoader.LoadCounterReport(sushiDoc);
 
-            XmlNodeList entries = sushiDoc.SelectNodes("//c:ReportItems", xmlnsManager);
-            if (entries != null)
+            // only do one report for now
+            if (sushiReport.CounterReports.Count > 0)
             {
-                foreach (XmlNode entry in entries)
+                CounterReport report = sushiReport.CounterReports[0];
+
+                foreach (JournalReportItem reportItem in report.ReportItems)
                 {
-                    StringBuilder journal = new StringBuilder(WrapComma(entry.SelectSingleNode("c:ItemName", xmlnsManager).InnerText));
-                    journal.Append("," + WrapComma(entry.SelectSingleNode("c:ItemPublisher", xmlnsManager).InnerText));
-                    journal.Append("," + WrapComma(entry.SelectSingleNode("c:ItemPlatform", xmlnsManager).InnerText));
-
-                    XmlNodeList identifiers = entry.SelectNodes("c:ItemIdentifier", xmlnsManager);
-                    string printIssn = string.Empty;
-                    string onlineIssn = string.Empty;
-                    if (identifiers != null)
-                    {
-                        foreach (XmlNode identifier in identifiers)
-                        {
-                            string value = identifier.SelectSingleNode("c:Value", xmlnsManager).InnerText;
-                            switch (identifier.SelectSingleNode("c:Type", xmlnsManager).InnerText.ToLower())
-                            {
-                                // see http://www.niso.org/workrooms/sushi/values/#item
-                                case "issn":
-                                    printIssn = value;
-                                    break;
-                                case "print_issn":
-                                    printIssn = value;
-                                    break;
-                                case "online_issn":
-                                    onlineIssn = value;
-                                    break;
-                            }
-                        }
-                    }
-
-
-                    journal.Append("," + printIssn);
-                    journal.Append("," + onlineIssn);
-
-                    MonthData = new Dictionary<string, string>();
-                    XmlNodeList months = entry.SelectNodes("c:ItemPerformance", xmlnsManager);
-                    if (months != null)
-                    {
-                        foreach (XmlNode month in months)
-                        {
-                            DateTime startDate;
-                            DateTime endDate;
-                            DateTime.TryParse(month.SelectSingleNode("c:Period/c:Begin", xmlnsManager).InnerText, out startDate);
-                            DateTime.TryParse(month.SelectSingleNode("c:Period/c:End", xmlnsManager).InnerText, out endDate);
-
-                            // check that it's data for only one month (ignore multi-month data)
-                            if (startDate.Month == endDate.Month)
-                            {
-                                // get ft_total only
-                                if (month.SelectSingleNode("c:Category", xmlnsManager).InnerText == "Requests" && month.SelectSingleNode("c:Instance/c:MetricType", xmlnsManager).InnerText == "ft_total")
-                                {
-                                    try
-                                    {
-                                        MonthData.Add(startDate.ToString("MMM-yy"), month.SelectSingleNode("c:Instance/c:Count", xmlnsManager).InnerText);
-                                    }
-                                    catch (ArgumentException)
-                                    {
-                                        Console.Out.WriteLine(string.Format("Warning: Ignoring Duplicates for Month: {0}, Category: {1}", startDate.ToString("MMM-yy"), month.SelectSingleNode("c:Category", xmlnsManager).InnerText));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    StringBuilder line =
+                        new StringBuilder(WrapComma(reportItem.Name) + "," + WrapComma(reportItem.Publisher) + "," +
+                                          WrapComma(reportItem.Platform) + "," + reportItem.PrintISSN + "," + reportItem.OnlineISSN);
 
 
                     for (DateTime currMonth = StartDate; currMonth <= EndDate; currMonth = currMonth.AddMonths(1))
                     {
-                        if (MonthData.ContainsKey(currMonth.ToString("MMM-yy")))
+                        DateTime start = new DateTime(currMonth.Year, currMonth.Month, 1);
+                        DateTime end = new DateTime(currMonth.Year, currMonth.Month, DateTime.DaysInMonth(currMonth.Year, currMonth.Month));
+
+                        CounterMetric metric;
+
+                        bool foundCount = false;
+                        if (reportItem.TryGetMetric(start, end, CounterMetricCategory.Requests, out metric))
                         {
-                            journal.Append("," + MonthData[currMonth.ToString("MMM-yy")]);
+                            foreach (var instance in metric.Instance)
+                            {
+                                // get ft_total only
+                                if (!foundCount && instance.Type == CounterMetricType.ft_total)
+                                {
+                                    line.Append("," + instance.Count);
+                                    foundCount = true;
+                                }
+                            }
+                            
                         }
-                        else
+
+                        if (!foundCount)
                         {
-                            journal.Append(",");
+                            line.Append(",");
                         }
                     }
 
 
                     // fill YTD with zeros since this can't be calculated
-                    journal.Append(",0");
-                    journal.Append(",0");
-                    journal.Append(",0");
+                    line.Append(",0");
+                    line.Append(",0");
+                    line.Append(",0");
 
-                    tw.WriteLine(journal);
+                    tw.WriteLine(line);
+
                 }
             }
         }

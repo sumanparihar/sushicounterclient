@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SushiLibrary
 {
-    public class JournalReport : CounterReportItem
+    public class JournalReportItem : CounterReportItem
     {
         public string PrintISSN { get; set; }
         public string OnlineISSN { get; set; }
