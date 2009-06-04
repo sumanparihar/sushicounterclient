@@ -52,6 +52,12 @@
   <ItemGroup>
     <None Include="sushiconfig.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SushiLibrary\SushiLibrary.csproj">
+      <Project>{946016BA-659F-46D9-AD31-1C87C8C84D65}</Project>
+      <Name>SushiLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

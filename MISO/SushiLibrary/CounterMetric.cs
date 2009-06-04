@@ -10,6 +10,13 @@ namespace SushiLibrary
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public List<CounterMetricInstance> Instance { get; set; }
+
+        public CounterMetric(DateTime start, DateTime end, CounterMetricCategory category)
+        {
+            Start = start;
+            End = end;
+            Category = category;
+        }
     }
 
     public enum CounterMetricCategory

@@ -7,6 +7,15 @@ namespace SushiLibrary
 {
     public static class ReportLoader
     {
+        private static string GetNodeValue(XmlNode attribute)
+        {
+            if (attribute == null)
+            {
+                return null;
+            }
+            return attribute.Value;
+        }
+
         public static SushiReport LoadCounterReport(XmlDocument reportXml)
         {
             SushiReport sushiReport = new SushiReport();
@@ -16,10 +25,14 @@ namespace SushiLibrary
             xmlnsManager.AddNamespace("c", "http://www.niso.org/schemas/counter");
             xmlnsManager.AddNamespace("s", "http://www.niso.org/schemas/sushi");
 
-            sushiReport.ReportType = 
-                (CounterReportType)Enum.Parse(typeof(CounterReportType), reportXml.SelectSingleNode("//s:ReportDefinition", xmlnsManager).Attributes["Name"].Value, true);
+            sushiReport.ReportType =
+                (CounterReportType)
+                Enum.Parse(typeof (CounterReportType),
+                           GetNodeValue(
+                               reportXml.SelectSingleNode("//s:ReportDefinition", xmlnsManager).Attributes["Name"]),
+                           true);
 
-            sushiReport.Release = reportXml.SelectSingleNode("//s:ReportDefinition", xmlnsManager).Attributes["Release"].Value;
+            sushiReport.Release = GetNodeValue(reportXml.SelectSingleNode("//s:ReportDefinition", xmlnsManager).Attributes["Release"]);
 
             XmlNodeList reports = reportXml.SelectNodes("//c:Report", xmlnsManager);
 
@@ -30,20 +43,21 @@ namespace SushiLibrary
                 foreach (XmlNode report in reports)
                 {
                     CounterReport counterReport = new CounterReport();
-                    counterReport.ID = report.Attributes["ID"].Value;
-                    counterReport.Name = report.Attributes["Name"].Value;
-                    counterReport.Title = report.Attributes["Title"].Value;
-                    counterReport.Version = report.Attributes["Version"].Value;
+                    counterReport.ID = GetNodeValue(report.Attributes["ID"]);
+                    counterReport.Name = GetNodeValue(report.Attributes["Name"]);
+                    counterReport.Title = GetNodeValue(report.Attributes["Title"]);
+                    counterReport.Version = GetNodeValue(report.Attributes["Version"]);
                     DateTime created;
-                    DateTime.TryParse(report.Attributes["Created"].Value, out created);
+                    DateTime.TryParse(GetNodeValue(report.Attributes["Created"]), out created);
                     counterReport.Created = created;
 
+                    // TODO add the rest of report metadata
 
                     XmlNodeList reportItems = report.SelectNodes("c:Customer/c:ReportItems", xmlnsManager);
 
                     if (reportItems != null)
                     {
-                        counterReport.CounterReportItems = new List<CounterReportItem>();
+                        counterReport.ReportItems = new List<CounterReportItem>();
 
                         foreach (XmlNode reportItem in reportItems)
                         {
@@ -56,7 +70,7 @@ namespace SushiLibrary
                                 case CounterReportType.JR3:
                                 case CounterReportType.JR4:
                                 case CounterReportType.JR5:
-                                    JournalReport journalReport = new JournalReport();
+                                    JournalReportItem journalReportItem = new JournalReportItem();
                                     XmlNodeList identifiers = reportItem.SelectNodes("c:ItemIdentifier", xmlnsManager);
 
                                     if (identifiers != null)
@@ -68,19 +82,19 @@ namespace SushiLibrary
                                             {
                                                 // see http://www.niso.org/workrooms/sushi/values/#item
                                                 case "issn":
-                                                    journalReport.PrintISSN = value;
+                                                    journalReportItem.PrintISSN = value;
                                                     break;
                                                 case "print_issn":
-                                                    journalReport.PrintISSN = value;
+                                                    journalReportItem.PrintISSN = value;
                                                     break;
                                                 case "online_issn":
-                                                    journalReport.OnlineISSN = value;
+                                                    journalReportItem.OnlineISSN = value;
                                                     break;
                                             }
                                         }
                                     }
 
-                                    counterReportItem = journalReport;
+                                    counterReportItem = journalReportItem;
                                     break;
                                 default:
                                     counterReportItem = new CounterReportItem();
@@ -96,36 +110,24 @@ namespace SushiLibrary
 
                             if (metrics != null)
                             {
-                                counterReportItem.Metrics = new Dictionary<string, CounterMetric>();
-
                                 foreach (XmlNode metric in metrics)
                                 {
                                     DateTime start, end;
                                     DateTime.TryParse(metric.SelectSingleNode("c:Period/c:Begin", xmlnsManager).InnerText, out start);
                                     DateTime.TryParse(metric.SelectSingleNode("c:Period/c:End", xmlnsManager).InnerText, out end);
 
-                                    CounterMetric counterMetric;
-
-                                    // merge different instances under the same time period
-                                    if (!counterReportItem.Metrics.TryGetValue(start + "|" + end,  out counterMetric))
-                                    {
-                                        counterMetric = new CounterMetric();
-                                    }
-
-                                    counterMetric.Start = start;
-
-                                    counterMetric.End = end;
-
-                                    counterMetric.Category =
-                                        (CounterMetricCategory)
-                                        Enum.Parse(typeof (CounterMetricCategory),
-                                                   metric.SelectSingleNode("c:Category", xmlnsManager).InnerText, true);
+                                    string category = metric.SelectSingleNode("c:Category", xmlnsManager).InnerText;
+                                    CounterMetric counterMetric = counterReportItem.GetMetric(start, end, (CounterMetricCategory)Enum.Parse(typeof(CounterMetricCategory), category, true));
 
                                     XmlNodeList instances = metric.SelectNodes("c:Instance", xmlnsManager);
 
                                     if (instances != null)
                                     {
-                                        counterMetric.Instance = new List<CounterMetricInstance>();
+                                        if (counterMetric.Instance == null)
+                                        {
+                                            counterMetric.Instance = new List<CounterMetricInstance>();
+                                        }
+
                                         foreach (XmlNode instance in instances)
                                         {
                                             CounterMetricInstance metricInstance= new CounterMetricInstance();
@@ -146,12 +148,10 @@ namespace SushiLibrary
 
                                     }
 
-                                    counterReportItem.Metrics[start + "|" + end] = counterMetric;
-
                                 }
                             }
-                           
-                            counterReport.CounterReportItems.Add(counterReportItem);
+
+                            counterReport.ReportItems.Add(counterReportItem);
 
                         }
                     }

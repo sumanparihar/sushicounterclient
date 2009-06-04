@@ -41,7 +41,7 @@
     <Compile Include="CounterReport.cs" />
     <Compile Include="CounterReportItem.cs" />
     <Compile Include="CounterReportType.cs" />
-    <Compile Include="JournalReport.cs" />
+    <Compile Include="JournalReportItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportLoader.cs" />
     <Compile Include="SushiReport.cs" />
