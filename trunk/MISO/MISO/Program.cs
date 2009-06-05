@@ -361,7 +361,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         /// <param name="fields"></param>
         private static void ProcessSushiRequest(string reportType, string[] fields)
         {
-            string fileName = string.Format("{0}_{1}_{2}_{3}_{4}", fields[1], fields[0], StartDate.ToString("MMyyyy"), EndDate.ToString("MMyyyy"), reportType);
+            string fileName = string.Format("{0}_{1}_{2}_{3}_{4}", fields[1], fields[0], StartDate.ToString("yyyyMM"), EndDate.ToString("yyyyMM"), reportType);
 
             fileName = XmlMode ? fileName + ".xml" : fileName + ".csv";
 
