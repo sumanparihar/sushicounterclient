@@ -102,10 +102,8 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             try
             {
                 // lookup table for command args
-                Dictionary<string, string> arguments = new Dictionary<string, string>();
                 //arguments.Add();
                 string validateFile = string.Empty;
-                bool hasRange = false;
                 bool specifiedLibCodes = false;
                 string start = string.Empty;
                 string end = string.Empty;
