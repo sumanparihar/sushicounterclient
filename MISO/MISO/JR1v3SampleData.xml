@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
     <ReportResponse xmlns="http://www.niso.org/schemas/sushi/counter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="http://www.niso.org/schemas/sushi/counter http://www.niso.org/schemas/sushi/counter_sushi3_0.xsd">
       <Requestor xmlns:sus="http://www.niso.org/schemas/sushi" xmlns="http://www.niso.org/schemas/sushi">
@@ -22,8 +22,8 @@
       <Report>
           <Report Created="2009-05-14T11:50:04Z" ID="SomeId" Name="Tae's JR1 Sample" Title="Number of Successful Full-Text Article Requests by Month and Journal" Version="3" xmlns="http://www.niso.org/schemas/counter">
             <Vendor>
-              <Name>Tae's Title</Name>
-              <ID>SomeId</ID>
+              <Name>Tae's Counter Sample</Name>
+              <ID>Vendor ID</ID>
               <Contact>
                 <E-mail>tae.kim@serialssolutions.com</E-mail>
               </Contact>
@@ -32,11 +32,11 @@
             </Vendor>
             <Customer>
               <Name>Tae</Name>
-              <ID>SomeId</ID>
+              <ID>Customer ID</ID>
 			  <!-- Consortium is optional -->
               <Consortium>
-                <Code>SomeCode</Code>
-                <WellKnownName>Tae's Consortium</WellKnownName>
+                <Code>Consortium Code</Code>
+                <WellKnownName>Consortium's WellKnownName</WellKnownName>
               </Consortium>
               <ReportItems>
                 <ItemIdentifier>
@@ -47,8 +47,8 @@
                   <Type>Online_ISSN</Type>
                   <Value>2222-2222</Value>
                 </ItemIdentifier>
-                <ItemPlatform>SomePlatform</ItemPlatform>
-                <ItemPublisher>SomePublisher</ItemPublisher>
+                <ItemPlatform>Platform Name</ItemPlatform>
+                <ItemPublisher>Publisher Name</ItemPublisher>
                 <ItemName>Tae's Journal</ItemName>
                 <ItemDataType>Journal</ItemDataType>
                 <ItemPerformance>
@@ -115,6 +115,82 @@
                   <Instance>
                     <MetricType>ft_total</MetricType>
                     <Count>4</Count>
+                  </Instance>
+                </ItemPerformance>
+              </ReportItems>
+              <ReportItems>
+                <ItemIdentifier>
+                  <Type>ISSN</Type>
+                  <Value>3333-3333</Value>
+                </ItemIdentifier>
+                <ItemPlatform>プラットフォーム</ItemPlatform>
+                <ItemPublisher>発行者</ItemPublisher>
+                <ItemName>日本語のタイトル</ItemName>
+                <ItemDataType>Journal</ItemDataType>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-01-01</Begin>
+                    <End>2007-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_pdf</MetricType>
+                    <Count>5</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-02-01</Begin>
+                    <End>2007-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_pdf</MetricType>
+                    <Count>10</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-01-01</Begin>
+                    <End>2007-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_html</MetricType>
+                    <Count>9</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-02-01</Begin>
+                    <End>2007-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_html</MetricType>
+                    <Count>7</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-01-01</Begin>
+                    <End>2007-01-31</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_total</MetricType>
+                    <Count>3</Count>
+                  </Instance>
+                </ItemPerformance>
+                <ItemPerformance>
+                  <Period>
+                    <Begin>2007-02-01</Begin>
+                    <End>2007-02-28</End>
+                  </Period>
+                  <Category>Requests</Category>
+                  <Instance>
+                    <MetricType>ft_total</MetricType>
+                    <Count>1</Count>
                   </Instance>
                 </ItemPerformance>
               </ReportItems>
