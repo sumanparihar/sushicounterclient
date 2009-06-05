@@ -42,16 +42,26 @@ namespace SushiLibrary
 
                 foreach (XmlNode report in reports)
                 {
-                    CounterReport counterReport = new CounterReport();
-                    counterReport.ID = GetNodeValue(report.Attributes["ID"]);
-                    counterReport.Name = GetNodeValue(report.Attributes["Name"]);
-                    counterReport.Title = GetNodeValue(report.Attributes["Title"]);
-                    counterReport.Version = GetNodeValue(report.Attributes["Version"]);
                     DateTime created;
                     DateTime.TryParse(GetNodeValue(report.Attributes["Created"]), out created);
-                    counterReport.Created = created;
-
-                    // TODO add the rest of report metadata
+                    
+                    var counterReport = new CounterReport
+                                            {
+                                                ID = GetNodeValue(report.Attributes["ID"]),
+                                                Name = GetNodeValue(report.Attributes["Name"]),
+                                                Title = GetNodeValue(report.Attributes["Title"]),
+                                                Version = GetNodeValue(report.Attributes["Version"]),
+                                                Created = created,
+                                                Vendor_Id= report.SelectSingleNode("c:Vendor/c:ID", xmlnsManager).InnerText,
+                                                Vendor_Name = report.SelectSingleNode("c:Vendor/c:Name", xmlnsManager).InnerText,
+                                                Vendor_ContactEmail = report.SelectSingleNode("c:Vendor/c:Contact/c:E-mail", xmlnsManager).InnerText,
+                                                Vendor_WebSiteUrl = report.SelectSingleNode("c:Vendor/c:WebSiteUrl", xmlnsManager).InnerText,
+                                                Vendor_LogoUrl = report.SelectSingleNode("c:Vendor/c:LogoUrl", xmlnsManager).InnerText,
+                                                Customer_ID = report.SelectSingleNode("c:Customer/c:ID", xmlnsManager).InnerText,
+                                                Customer_Name = report.SelectSingleNode("c:Customer/c:Name", xmlnsManager).InnerText,
+                                                Customer_Consortium_Code = report.SelectSingleNode("c:Customer/c:Consortium/c:Code", xmlnsManager).InnerText,
+                                                Customer_Consortium_WellKnownName = report.SelectSingleNode("c:Customer/c:Consortium/c:WellKnownName", xmlnsManager).InnerText
+                                            };
 
                     XmlNodeList reportItems = report.SelectNodes("c:Customer/c:ReportItems", xmlnsManager);
 
@@ -137,11 +147,8 @@ namespace SushiLibrary
                                                            instance.SelectSingleNode("c:MetricType",
                                                                                    xmlnsManager).InnerText, true);
 
-                                            int count;
-                                            Int32.TryParse(
-                                                instance.SelectSingleNode("c:Count", xmlnsManager).InnerText,
-                                                out count);
-                                            metricInstance.Count = count;
+                                            // return exception if can't parse count, since it's important to process properly
+                                            metricInstance.Count = Int32.Parse(instance.SelectSingleNode("c:Count", xmlnsManager).InnerText); ;
 
                                             counterMetric.Instance.Add(metricInstance);
                                         }
