@@ -45,7 +45,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
 -x: Save Request Response as XML without converting to csv";
 
-        private static char[] DELIM = { ',' };
+        private static readonly char[] DELIM = { ',' };
 
         // global variables to MISO
         private static DateTime StartDate;
@@ -54,7 +54,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         private static bool XmlMode = false;
         private static bool ValidateMode = false;
         private static bool StrictValidateMode = false;
-        private static XmlReaderSettings XmlReaderSettings = new XmlReaderSettings();
+        private static readonly XmlReaderSettings XmlReaderSettings = new XmlReaderSettings();
 
         // lookup table to find month data
         private static Dictionary<string, string> MonthData;
