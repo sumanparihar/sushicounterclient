@@ -9,10 +9,17 @@ namespace SushiLibrary
         public string Name { get; set; }
         public string Publisher { get; set; }
         public string Platform { get; set; }
+        public Dictionary<string, CounterMetric> Metrics
+        {
+            get
+            {
+                return _metrics;
+            }
+        }
 
         private readonly Dictionary<string, CounterMetric> _metrics = new Dictionary<string, CounterMetric>();
 
-        private string CalculateHashKey(DateTime start, DateTime end, CounterMetricCategory category)
+        private static string CalculateHashKey(DateTime start, DateTime end, CounterMetricCategory category)
         {
             return start + "|" + end + "|" + category;
         }

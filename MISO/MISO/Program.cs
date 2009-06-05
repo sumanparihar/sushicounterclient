@@ -21,6 +21,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using SushiLibrary;
+using SushiLibrary.Validation;
 
 namespace MISO
 {
@@ -28,16 +29,17 @@ namespace MISO
     {
         // constants
         private const string CounterSchemaURL = "http://www.niso.org/schemas/sushi/counter_sushi3_0.xsd";
-        private static string[] DateTimeFormats = { "yyyyMM" };
+        private static readonly string[] DateTimeFormats = { "yyyyMM" };
         private const string CommandParameterMessage = @"Parameters are:
 MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by commas]
--v: Validate Mode, validates specified file
+-v: Validate Mode: Validates a specified file or reports from the sushi server with the counter-sushi schema
 
--d: Sushi request start and end dates
-    [start]: start date in mmyyyy format
-    [end]: end date in mmyyyy format
-    end date must not be before start date
-    If not specified, it will automatically default to the previous month from the current date.
+-s: Strict Validation Mode: Validates a specified file or reports from the sushi server with the schema and custom validation rules
+
+-d: Specify Sushi request start and end dates
+    [start]: start date in yyyymm format
+    [end]: end date in yyyymm format
+    By default, it will automatically request the previous month from the current date.
 
 -l: Specify Library Codes
 
@@ -51,6 +53,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         private static string RequestTemplate;
         private static bool XmlMode = false;
         private static bool ValidateMode = false;
+        private static bool StrictValidateMode = false;
         private static XmlReaderSettings XmlReaderSettings = new XmlReaderSettings();
 
         // lookup table to find month data
@@ -71,11 +74,11 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         }
 
         //validation mode stuff
-        private static bool isValid = true;
+        private static bool IsValid = true;
 
         private static void CounterV3ValidationEventHandler(object sender, ValidationEventArgs args)
         {
-            isValid = false;
+            IsValid = false;
             Console.WriteLine("Validation event\n" + args.Message);
 
         }
@@ -145,12 +148,19 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                             Console.WriteLine(CommandParameterMessage);
                             System.Environment.Exit(-1);
                             break;
+                        case "-s":
+                            StrictValidateMode = true;
+                            if (i + 1 < args.Length)
+                            {
+                                validateFile = args[i + 1];
+                            }
+                            break;
                     }
                 }
 
                 #region Initialize
                 // validate file mode
-                if (ValidateMode && !string.IsNullOrEmpty(validateFile))
+                if ((ValidateMode || StrictValidateMode) && !string.IsNullOrEmpty(validateFile))
                 {
                     using (XmlReader xmlReader = XmlReader.Create(new XmlTextReader(validateFile), XmlReaderSettings))
                     {
@@ -171,7 +181,29 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                             System.Environment.Exit(-1);
                         }
                     }
-                    if (isValid)
+
+                    if (StrictValidateMode)
+                    {
+                        var file = new FileStream(validateFile, FileMode.Open, FileAccess.Read);
+                        var xmlFile = new XmlDocument();
+                        xmlFile.Load(file);
+
+                        SushiReport report = ReportLoader.LoadCounterReport(xmlFile);
+
+                        var validator = new CounterValidator();
+                        if (!validator.Validate(report))
+                        {
+                            IsValid = false;
+
+                            foreach (var error in validator.ErrorMessage)
+                            {
+                                Console.WriteLine(error);
+                            }
+                        }
+
+                    }
+
+                    if (IsValid)
                     {
                         Console.WriteLine("Document is valid");
                     }
@@ -359,8 +391,12 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
             XmlDocument sushiDoc = CallSushiServer(reqDoc, fields[3]);
 
-            if (ValidateMode)
+            SushiReport sushiReport = ReportLoader.LoadCounterReport(sushiDoc);
+
+            if (ValidateMode || StrictValidateMode)
             {
+                IsValid = true;
+
                 MemoryStream ms = new MemoryStream();
                 sushiDoc.Save(ms);
                 ms.Position = 0;
@@ -372,8 +408,30 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                     {
                         // just read through file to trigger any validation errors
                     }
+                }
 
-                    Console.WriteLine(string.Format("Finished validation Counter report of type {0} for Provider: {1}", reportType, fields[1]));
+                if (StrictValidateMode)
+                {
+                    var validator = new CounterValidator();
+                    if (!validator.Validate(sushiReport))
+                    {
+                        IsValid = false;
+
+                        foreach (var error in validator.ErrorMessage)
+                        {
+                            Console.WriteLine(error);
+                        }
+                    }
+                }
+
+                Console.WriteLine(string.Format("Finished validation Counter report of type {0} for Provider: {1}", reportType, fields[1]));
+                if (IsValid)
+                {
+                    Console.WriteLine("Document is valid");
+                }
+                else
+                {
+                    Console.WriteLine("Document is invalid");
                 }
             }
 
@@ -421,7 +479,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                     header.Append(",YTD Total,YTD HTML,YTD PDF");
                     tw.WriteLine(header);
 
-                    ParseJR1v3(sushiDoc, tw);
+                    ParseJR1v3(sushiReport, tw);
 
                     tw.Close();
 
@@ -475,10 +533,8 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             }
         }
 
-        private static void ParseJR1v3(XmlDocument sushiDoc, TextWriter tw)
+        private static void ParseJR1v3(SushiReport sushiReport, TextWriter tw)
         {
-
-            SushiReport sushiReport = ReportLoader.LoadCounterReport(sushiDoc);
 
             // only do one report for now
             if (sushiReport.CounterReports.Count > 0)
