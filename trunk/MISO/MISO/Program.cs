@@ -556,7 +556,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                         bool foundCount = false;
                         if (reportItem.TryGetMetric(start, end, CounterMetricCategory.Requests, out metric))
                         {
-                            foreach (var instance in metric.Instance)
+                            foreach (var instance in metric.Instances)
                             {
                                 // get ft_total only
                                 if (!foundCount && instance.Type == CounterMetricType.ft_total)
