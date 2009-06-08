@@ -160,9 +160,9 @@ namespace SushiLibrary
 
                                     if (instances != null)
                                     {
-                                        if (counterMetric.Instance == null)
+                                        if (counterMetric.Instances == null)
                                         {
-                                            counterMetric.Instance = new List<CounterMetricInstance>();
+                                            counterMetric.Instances = new List<CounterMetricInstance>();
                                         }
 
                                         foreach (XmlNode instance in instances)
@@ -177,7 +177,7 @@ namespace SushiLibrary
                                             // return exception if can't parse count, since it's important to process properly
                                             metricInstance.Count = Int32.Parse(instance.SelectSingleNode("c:Count", xmlnsManager).InnerText); ;
 
-                                            counterMetric.Instance.Add(metricInstance);
+                                            counterMetric.Instances.Add(metricInstance);
                                         }
 
                                     }
