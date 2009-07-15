@@ -14,9 +14,8 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Miso.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,6 +49,8 @@
     <Content Include="WSSecurityPlainText.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Miso.snk" />
     <None Include="sushiconfig.csv" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +71,7 @@
     <PreBuildEvent>copy $(ProjectDir)sushiconfig.csv $(ProjectDir)$(OutDir)
 copy $(ProjectDir)SushiSoapEnv.xml $(ProjectDir)$(OutDir)
 copy $(ProjectDir)WSSecurityPlainText.xml $(ProjectDir)$(OutDir)
+copy $(ProjectDir)LICENSE.txt $(ProjectDir)$(OutDir)
 copy $(ProjectDir)JR1v3SampleData.xml $(ProjectDir)$(OutDir)
 copy $(ProjectDir)README.txt $(ProjectDir)$(OutDir)</PreBuildEvent>
   </PropertyGroup>
