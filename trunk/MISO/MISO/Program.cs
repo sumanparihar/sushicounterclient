@@ -389,6 +389,20 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
             XmlDocument sushiDoc = CallSushiServer(reqDoc, fields[3]);
 
+
+            XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
+            // Proquest Error
+            xmlnsManager.AddNamespace("s", "http://www.niso.org/schemas/sushi");
+            XmlNode exception = sushiDoc.SelectSingleNode("//s:Exception", xmlnsManager);
+
+            if (exception != null && exception.HasChildNodes)
+            {
+                Console.WriteLine(string.Format("Exception detected for report of type {0} for Provider: {1}\nPlease see error log for more details.", reportType, fields[1]));
+                throw new XmlException(
+                    string.Format("Report returned Exception: Number: {0}, Severity: {1}, Message: {2}",
+                    exception.SelectSingleNode("s:Number", xmlnsManager).InnerText, exception.SelectSingleNode("s:Severity", xmlnsManager).InnerText, exception.SelectSingleNode("s:Message", xmlnsManager).InnerText));
+            }
+
             SushiReport sushiReport = ReportLoader.LoadCounterReport(sushiDoc);
 
             if (ValidateMode || StrictValidateMode)
@@ -438,20 +452,6 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                 sushiDoc.Save(fileName);
                 return; // parsing and conversion to csv is unnecessary
             }
-
-            XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
-            // Proquest Error
-            xmlnsManager.AddNamespace("s", "http://www.niso.org/schemas/sushi");
-            XmlNode exception = sushiDoc.SelectSingleNode("//s:Exception", xmlnsManager);
-
-            if (exception != null && exception.HasChildNodes)
-            {
-                Console.WriteLine(string.Format("Exception detected for report of type {0} for Provider: {1}\nPlease see error log for more details.", reportType, fields[1]));
-                throw new XmlException(
-                    string.Format("Report returned Exception: Number: {0}, Severity: {1}, Message: {2}",
-                    exception.SelectSingleNode("s:Number", xmlnsManager).InnerText, exception.SelectSingleNode("s:Severity", xmlnsManager).InnerText, exception.SelectSingleNode("s:Message", xmlnsManager).InnerText));
-            }
-
 
             TextWriter tw = new StreamWriter(fileName);
             StringBuilder header;
