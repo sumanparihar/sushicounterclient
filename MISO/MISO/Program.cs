@@ -90,24 +90,15 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
 
         static void Main(string[] args)
         {
-            FileStream sushiConfig = new FileStream("sushiconfig.csv", FileMode.Open, FileAccess.Read);
-            StreamReader sr = new StreamReader(sushiConfig);
-
-            //initiate validation
-            XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
-            XmlReaderSettings.ValidationType = ValidationType.Schema;
-            XmlReaderSettings.Schemas.Add(CounterSushiSchema);
-            XmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
+            #region Process Arguements
+            string validateFile = string.Empty;
+            bool specifiedLibCodes = false;
+            string start = string.Empty;
+            string end = string.Empty;
+            string libCodeStr = string.Empty;
 
             try
             {
-                // lookup table for command args
-                //arguments.Add();
-                string validateFile = string.Empty;
-                bool specifiedLibCodes = false;
-                string start = string.Empty;
-                string end = string.Empty;
-                string libCodeStr = string.Empty;
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -118,7 +109,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                             ValidateMode = true;
                             if (i + 1 < args.Length)
                             {
-                                validateFile = args[i + 1];   
+                                validateFile = args[i + 1];
                             }
                             break;
                         case "-d":
@@ -155,8 +146,26 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                             break;
                     }
                 }
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            #endregion
 
-                #region Initialize
+            FileStream sushiConfig = new FileStream("sushiconfig.csv", FileMode.Open, FileAccess.Read);
+            StreamReader sr = new StreamReader(sushiConfig);
+
+            //initiate validation
+            XmlSchema CounterSushiSchema = XmlSchema.Read(new XmlTextReader(CounterSchemaURL), new ValidationEventHandler(CounterV3ValidationEventHandler));
+            XmlReaderSettings.ValidationType = ValidationType.Schema;
+            XmlReaderSettings.Schemas.Add(CounterSushiSchema);
+            XmlReaderSettings.ValidationEventHandler += new ValidationEventHandler(CounterV3ValidationEventHandler);
+
+            try
+            {
+
+            #region Initialize
                 // validate file mode
                 if ((ValidateMode || StrictValidateMode) && !string.IsNullOrEmpty(validateFile))
                 {
@@ -298,10 +307,6 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                         }
                     }
                 }
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine(ex.Message);
             }
             catch (FormatException ex)
             {
