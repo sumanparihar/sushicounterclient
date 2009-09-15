@@ -37,6 +37,7 @@ namespace SushiLibrary
         Requests,
         Searches,
         Sessions,
-        Turnaways
+        Turnaways,
+        Invalid // used to parse invalid categories
     }
 }

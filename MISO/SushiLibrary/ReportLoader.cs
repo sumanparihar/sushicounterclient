@@ -153,8 +153,17 @@ namespace SushiLibrary
                                     DateTime.TryParse(metric.SelectSingleNode("c:Period/c:Begin", xmlnsManager).InnerText, out start);
                                     DateTime.TryParse(metric.SelectSingleNode("c:Period/c:End", xmlnsManager).InnerText, out end);
 
-                                    string category = metric.SelectSingleNode("c:Category", xmlnsManager).InnerText;
-                                    CounterMetric counterMetric = counterReportItem.GetMetric(start, end, (CounterMetricCategory)Enum.Parse(typeof(CounterMetricCategory), category, true));
+                                    CounterMetricCategory category = CounterMetricCategory.Invalid;
+
+                                    try
+                                    {
+                                        category = (CounterMetricCategory)Enum.Parse(typeof(CounterMetricCategory), metric.SelectSingleNode("c:Category", xmlnsManager).InnerText, true);
+                                    }
+                                    catch (ArgumentException ex)
+                                    {
+                                        Console.WriteLine(string.Format("WARNING - Found Invalid Metric Category Type: {0}", metric.SelectSingleNode("c:Category", xmlnsManager).InnerText));
+                                    }
+                                    CounterMetric counterMetric = counterReportItem.GetMetric(start, end, category);
 
                                     XmlNodeList instances = metric.SelectNodes("c:Instance", xmlnsManager);
 
