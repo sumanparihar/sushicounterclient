@@ -329,7 +329,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
         /// <param name="reqDoc"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        private static XmlDocument CallSushiServer(XmlDocument reqDoc, string url)
+        private static string CallSushiServer(XmlDocument reqDoc, string url)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Headers.Add("SOAPAction", "\"SushiService:GetReportIn\"");
@@ -344,12 +344,9 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             stm.Close();
 
             WebResponse resp = req.GetResponse();
-            stm = resp.GetResponseStream();
 
-            XmlDocument resDoc = new XmlDocument();
-            resDoc.Load(stm);
-
-            return resDoc;
+            StreamReader SReader= new StreamReader(resp.GetResponseStream());
+            return SReader.ReadToEnd();
         }
 
         private static bool customXertificateValidation(object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors error)
@@ -392,8 +389,17 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                                   fields[8], reportType, fields[2], startDateStr, endDateStr, string.Empty));
             }
 
-            XmlDocument sushiDoc = CallSushiServer(reqDoc, fields[3]);
 
+            string resonseString = CallSushiServer(reqDoc, fields[3]);
+            if (XmlMode)
+            {
+                StreamWriter sw = new StreamWriter(fileName);
+                sw.Write(resonseString);
+                return; // parsing and conversion to csv is unnecessary
+            }
+
+            XmlDocument sushiDoc = new XmlDocument();
+            sushiDoc.LoadXml(resonseString);
 
             XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(sushiDoc.NameTable);
             // Proquest Error
@@ -450,12 +456,6 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
                 {
                     Console.WriteLine("Document is invalid");
                 }
-            }
-
-            if (XmlMode)
-            {
-                sushiDoc.Save(fileName);
-                return; // parsing and conversion to csv is unnecessary
             }
 
             TextWriter tw = new StreamWriter(fileName);
