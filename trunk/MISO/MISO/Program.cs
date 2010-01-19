@@ -395,6 +395,8 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             {
                 StreamWriter sw = new StreamWriter(fileName);
                 sw.Write(resonseString);
+                sw.Flush();
+                sw.Close();
                 return; // parsing and conversion to csv is unnecessary
             }
 
