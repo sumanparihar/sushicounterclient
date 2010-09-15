@@ -340,14 +340,18 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             req.Accept = "text/xml";
             req.Method = "POST";
             req.Timeout = Int32.MaxValue;
-            Stream stm = req.GetRequestStream();
-            reqDoc.Save(stm);
-            stm.Close();
+            using (Stream stm = req.GetRequestStream())
+            {
+                reqDoc.Save(stm);
 
-            WebResponse resp = req.GetResponse();
-
-            StreamReader SReader= new StreamReader(resp.GetResponseStream());
-            return SReader.ReadToEnd();
+                using (WebResponse resp = req.GetResponse())
+                {
+                    using (StreamReader sReader = new StreamReader(resp.GetResponseStream()))
+                    {
+                        return sReader.ReadToEnd();
+                    }
+                }
+            }
         }
 
         private static bool customXertificateValidation(object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors error)
