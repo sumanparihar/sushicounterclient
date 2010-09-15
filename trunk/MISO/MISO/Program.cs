@@ -339,6 +339,7 @@ MISO.EXE [-v] [filename] [-d] [start] [end] [-l] [Library codes separated by com
             req.ContentType = "text/xml;charset=\"utf-8\"";
             req.Accept = "text/xml";
             req.Method = "POST";
+            req.Timeout = Int32.MaxValue;
             Stream stm = req.GetRequestStream();
             reqDoc.Save(stm);
             stm.Close();
